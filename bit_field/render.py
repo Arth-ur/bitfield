@@ -159,12 +159,15 @@ class Renderer(object):
                     'font-weight': self.fontweight
                 }, str(msb)])
             if 'name' in e:
-                ltext = ['text', {
+                ltextattrs = {
                     'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
                     'font-size': self.fontsize,
                     'font-family': self.fontfamily,
-                    'font-weight': self.fontweight
-                }] + tspan(e['name'])
+                    'font-weight': self.fontweight,
+                }
+                if 'overline' in e and e['overline']:
+                    ltextattrs['text-decoration'] = 'overline'
+                ltext = ['text', ltextattrs] + tspan(e['name'])
                 names.append(ltext)
             if 'name' not in e or e['type'] is not None:
                 style = ''.join(['fill-opacity:0.1', typeStyle(e['type'])])
