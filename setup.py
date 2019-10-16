@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='bit_field',
-    version='0.1.0',
+    version='0.2.0',
     author="Arthur Gay",
     description="A bitfield diagram renderer",
     long_description=long_description,
