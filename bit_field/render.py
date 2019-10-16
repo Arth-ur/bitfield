@@ -1,4 +1,5 @@
 from .tspan import tspan
+import colorsys
 
 
 def t(x, y):
@@ -7,18 +8,19 @@ def t(x, y):
 
 def typeStyle(t):
     styles = {
-        '2': '0',
-        '3': '80',
-        '4': '170',
-        '5': '45',
-        '6': '126',
-        '7': '215',
+        '2': 0,
+        '3': 80,
+        '4': 170,
+        '5': 45,
+        '6': 126,
+        '7': 215,
     }
     t = str(t)
     if t in styles:
-        return ';fill:hsl(' + styles[t] + ',100%,50%)'
+        r, g, b = colorsys.hls_to_rgb(styles[t] / 360, 0.9, 1)
+        return ';fill:rgb({:.0f}, {:.0f}, {:.0f})'.format(r * 255, g * 255, b * 255)
     else:
-        return ''
+        return ';fill:rgb({:.0f}, {:.0f}, {:.0f})'.format(229, 229, 229)
 
 
 class Renderer(object):
@@ -86,8 +88,8 @@ class Renderer(object):
         res = ['g', {
             'transform': t(4.5, (self.lanes - self.index - 1) * self.vspace + 0.5)
         }]
-        res.append(self.cage(desc))
         res.append(self.labels(desc))
+        res.append(self.cage(desc))
         return res
 
     def cage(self, desc):
@@ -170,7 +172,7 @@ class Renderer(object):
                 ltext = ['text', ltextattrs] + tspan(e['name'])
                 names.append(ltext)
             if 'name' not in e or e['type'] is not None:
-                style = ''.join(['fill-opacity:0.1', typeStyle(e['type'])])
+                style = typeStyle(e['type'])
                 blanks.append(['rect', {
                     'style': style,
                     'x': step * (self.mod - msbm - 1),
