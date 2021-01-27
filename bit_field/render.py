@@ -60,9 +60,9 @@ class Renderer(object):
     def render(self, desc):
         res = ['svg', {
             'xmlns': 'http://www.w3.org/2000/svg',
-            'width': self.hspace + 9,
+            'width': self.hspace,
             'height': self.vspace * self.lanes + 5,
-            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace + 9, self.vspace * self.lanes + 5])
+            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, self.vspace * self.lanes + 5])
         }]
 
         lsb = 0
@@ -86,33 +86,35 @@ class Renderer(object):
 
     def lane(self, desc):
         res = ['g', {
-            'transform': t(4.5, (self.lanes - self.index - 1) * self.vspace + 0.5)
+            'transform': t(0, (self.lanes - self.index - 1) * self.vspace + 0.5)
         }]
         res.append(self.labels(desc))
         res.append(self.cage(desc))
         return res
 
     def cage(self, desc):
+        stroke_width = 1
         res = ['g', {
             'stroke': 'black',
-            'stroke-width': 1,
+            'stroke-width': stroke_width,
             'stroke-linecap': 'round',
             'transform': t(0, self.vspace / 4)
         }]
-        res.append(self.hline(self.hspace))
+        res.append(self.hline(self.hspace, padding=stroke_width/2))
         res.append(self.vline(self.vspace / 2))
-        res.append(self.hline(self.hspace, 0, self.vspace / 2))
+        res.append(self.hline(self.hspace, 0, self.vspace / 2, padding=stroke_width/2))
 
         i, j = self.index * self.mod, self.mod
+        hbit = (self.hspace - stroke_width/2) / self.mod
         while True:
             if j == self.mod or any(e['lsb'] == i for e in desc):
                 res.append(self.vline((self.vspace / 2),
-                                      j * (self.hspace / self.mod)))
+                                      j * hbit))
             else:
                 res.append(self.vline((self.vspace / 16),
-                                      j * (self.hspace / self.mod)))
+                                      j * hbit))
                 res.append(self.vline((self.vspace / 16),
-                                      j * (self.hspace / self.mod)))
+                                      j * hbit))
             i += 1
             j -= 1
             if j == 0:
@@ -191,15 +193,17 @@ class Renderer(object):
         res = ['g', {}, blanks, bits, names, attrs]
         return res
 
-    def hline(self, len, x=None, y=None):
+    def hline(self, len, x=0, y=0, padding=0):
         res = ['line']
         att = {}
-        if x is not None:
+        if padding != 0:
+            len -= padding
+            x += padding/2
+        if x != 0:
             att['x1'] = x
+        if len != 0:
             att['x2'] = len
-        else:
-            att['x2'] = len
-        if y is not None:
+        if y != 0:
             att['y1'] = y
             att['y2'] = y
         res.append(att)
