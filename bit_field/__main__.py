@@ -10,14 +10,14 @@ parser.add_argument(
     'input', help='input JSON filename - must be specified always')
 parser.add_argument(
     '--input', help='(compatibility option)', action='store_true')
-parser.add_argument('--vspace', help='vertical space', default=80)
-parser.add_argument('--hspace', help='horizontal space', default=640)
-parser.add_argument('--lanes', help='rectangle lanes', default=2)
-parser.add_argument('--bits', help='overall bitwidth', default=32)
+parser.add_argument('--vspace', help='vertical space', default=80, type=int)
+parser.add_argument('--hspace', help='horizontal space', default=640, type=int)
+parser.add_argument('--lanes', help='rectangle lanes', default=2, type=int)
+parser.add_argument('--bits', help='overall bitwidth', default=32, type=int)
 parser.add_argument('--bigendian', action='store_true')
 parser.add_argument('--fontfamily', default='sans-serif')
 parser.add_argument('--fontweight', default='normal')
-parser.add_argument('--fontsize', default=14)
+parser.add_argument('--fontsize', default=14, type=int)
 parser.add_argument('--beautify', action='store_true')
 
 
