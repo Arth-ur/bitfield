@@ -2,7 +2,6 @@ from .render import render
 from .jsonml_stringify import jsonml_stringify
 import re
 import argparse
-import json
 
 parser = argparse.ArgumentParser('bitfield')
 
@@ -19,7 +18,8 @@ parser.add_argument('--fontfamily', default='sans-serif')
 parser.add_argument('--fontweight', default='normal')
 parser.add_argument('--fontsize', default=14, type=int)
 parser.add_argument('--beautify', action='store_true')
-
+parser.add_argument('--json5', action='store_true')
+parser.add_argument('--no-json5', action='store_true')
 
 def beautify(res):
     import xml.dom.minidom
@@ -30,6 +30,18 @@ def beautify(res):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+
+    # default is json5, unless forced with --(no-)json5
+    if args.json5:
+        import json5 as json
+    elif args.no_json5:
+        import json
+    else:
+        try:
+            import json5 as json
+        except ModuleNotFoundError:
+            import json
+
     with open(args.input, 'r') as f:
         data = json.load(f)
         res = render(data,
