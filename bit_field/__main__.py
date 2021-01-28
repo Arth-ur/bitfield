@@ -20,6 +20,7 @@ parser.add_argument('--fontsize', default=14, type=int)
 parser.add_argument('--beautify', action='store_true')
 parser.add_argument('--json5', action='store_true')
 parser.add_argument('--no-json5', action='store_true')
+parser.add_argument('--compact', action='store_true')
 
 def beautify(res):
     import xml.dom.minidom
@@ -52,7 +53,8 @@ if __name__ == '__main__':
                      bigendian=args.bigendian,
                      fontfamily=args.fontfamily,
                      fontweight=args.fontweight,
-                     fontsize=args.fontsize)
+                     fontsize=args.fontsize,
+                     compact=args.compact)
 
     res = jsonml_stringify(res)
     if args.beautify:

@@ -32,7 +32,8 @@ class Renderer(object):
                  fontsize=14,
                  bigendian=False,
                  fontfamily='sans-serif',
-                 fontweight='normal'):
+                 fontweight='normal',
+                 compact=False):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -56,6 +57,7 @@ class Renderer(object):
         self.bigendian = bigendian
         self.fontfamily = fontfamily
         self.fontweight = fontweight
+        self.compact = compact
 
     def render(self, desc):
         res = ['svg', {
@@ -86,7 +88,10 @@ class Renderer(object):
                 else:
                     max_attr_count = max(max_attr_count, 1)
 
-        self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
+        if not self.compact:
+            self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
+        else:
+            self.vlane = self.vspace - self.fontsize * 1.2
         for i in range(0, self.lanes):
             self.index = i
             res.append(self.lane(desc))
@@ -94,8 +99,11 @@ class Renderer(object):
         return res
 
     def lane(self, desc):
+        dy = (self.lanes - self.index - 1) * self.vspace
+        if self.compact and self.index != self.lanes - 1:
+            dy -= (self.lanes - self.index - 2) * (self.fontsize * 1.2)
         res = ['g', {
-            'transform': t(0, (self.lanes - self.index - 1) * self.vspace)
+            'transform': t(0, dy)
         }]
         res.append(self.labels(desc))
         res.append(self.cage(desc))
@@ -103,11 +111,15 @@ class Renderer(object):
 
     def cage(self, desc):
         stroke_width = 1
+        if not self.compact or self.index == self.lanes - 1:
+            dy = self.fontsize * 1.2
+        else:
+            dy = 0
         res = ['g', {
             'stroke': 'black',
             'stroke-width': stroke_width,
             'stroke-linecap': 'round',
-            'transform': t(0, self.fontsize * 1.2)
+            'transform': t(0, dy)
         }]
         res.append(self.hline(self.hspace, padding=stroke_width/2))
         res.append(self.vline(self.vlane))
@@ -137,9 +149,9 @@ class Renderer(object):
     def labelArr(self, desc):
         step = self.hspace / self.mod
         bits = ['g', {'transform': t(step / 2, self.fontsize)}]
-        names = ['g', {'transform': t(step / 2, self.vlane / 2 + self.fontsize * 1.7)}]
-        attrs = ['g', {'transform': t(step / 2, self.vlane + self.fontsize * 2.2)}]
-        blanks = ['g', {'transform': t(0, self.fontsize*1.2)}]
+        names = ['g', {'transform': t(step / 2, self.vlane / 2 + self.fontsize / 2)}]
+        attrs = ['g', {'transform': t(step / 2, self.vlane + self.fontsize)}]
+        blanks = ['g', {'transform': t(0, 0)}]
 
         for e in desc:
             lsbm = 0
@@ -158,19 +170,20 @@ class Renderer(object):
                     msbm = e['msbm']
                 else:
                     continue
-            bits.append(['text', {
-                'x': step * (self.mod - lsbm - 1),
-                'font-size': self.fontsize,
-                'font-family': self.fontfamily,
-                'font-weight': self.fontweight
-            }, str(lsb)])
-            if lsbm != msbm:
+            if not self.compact:
                 bits.append(['text', {
-                    'x': step * (self.mod - msbm - 1),
+                    'x': step * (self.mod - lsbm - 1),
                     'font-size': self.fontsize,
                     'font-family': self.fontfamily,
                     'font-weight': self.fontweight
-                }, str(msb)])
+                }, str(lsb)])
+                if lsbm != msbm:
+                    bits.append(['text', {
+                        'x': step * (self.mod - msbm - 1),
+                        'font-size': self.fontsize,
+                        'font-family': self.fontfamily,
+                        'font-weight': self.fontweight
+                    }, str(msb)])
             if 'name' in e:
                 ltextattrs = {
                     'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
@@ -191,7 +204,7 @@ class Renderer(object):
                     'width': step * (msbm - lsbm + 1),
                     'height': self.vlane
                 }])
-            if 'attr' in e:
+            if 'attr' in e and not self.compact:
                 if isinstance(e['attr'], list):
                     e_attr = e['attr']
                 else:
@@ -206,7 +219,20 @@ class Renderer(object):
                     attrs.append(['g', {
                         'transform': t(0, i*self.fontsize)
                     }, atext])
-        res = ['g', {}, blanks, bits, names, attrs]
+        if not self.compact or self.index == self.lanes - 1:
+            if self.compact:
+                for i in range(self.bits // self.lanes):
+                    bits.append(['text', {
+                        'x': step * (self.mod - i - 1),
+                        'font-size': self.fontsize,
+                        'font-family': self.fontfamily,
+                        'font-weight': self.fontweight
+                    }, str(i)])
+            res = ['g', {}, bits, ['g', {
+                'transform': t(0, self.fontsize*1.2)
+            }, blanks, names, attrs]]
+        else:
+            res = ['g', {}, blanks, names, attrs]
         return res
 
     def hline(self, len, x=0, y=0, padding=0):
