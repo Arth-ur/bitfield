@@ -78,7 +78,14 @@ class Renderer(object):
             if 'type' not in e:
                 e['type'] = None
 
-        max_attr_count = 1 if any('attr' in x for x in desc) else 0
+        max_attr_count = 0
+        for e in desc:
+            if 'attr' in e:
+                if isinstance(e['attr'], list):
+                    max_attr_count = max(max_attr_count, len(e['attr']))
+                else:
+                    max_attr_count = max(max_attr_count, 1)
+
         self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
         for i in range(0, self.lanes):
             self.index = i
@@ -185,13 +192,20 @@ class Renderer(object):
                     'height': self.vlane
                 }])
             if 'attr' in e:
-                atext = ['text', {
-                    'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
-                    'font-size': self.fontsize,
-                    'font-family': self.fontfamily,
-                    'font-weight': self.fontweight
-                }] + tspan(e['attr'])
-                attrs.append(atext)
+                if isinstance(e['attr'], list):
+                    e_attr = e['attr']
+                else:
+                    e_attr = [e['attr']]
+                for i, attribute in enumerate(e_attr):
+                    atext = ['text', {
+                        'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
+                        'font-size': self.fontsize,
+                        'font-family': self.fontfamily,
+                        'font-weight': self.fontweight
+                    }] + tspan(attribute)
+                    attrs.append(['g', {
+                        'transform': t(0, i*self.fontsize)
+                    }, atext])
         res = ['g', {}, blanks, bits, names, attrs]
         return res
 
