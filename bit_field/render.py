@@ -61,8 +61,8 @@ class Renderer(object):
         res = ['svg', {
             'xmlns': 'http://www.w3.org/2000/svg',
             'width': self.hspace,
-            'height': self.vspace * self.lanes + 5,
-            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, self.vspace * self.lanes + 5])
+            'height': self.vspace * self.lanes,
+            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, self.vspace * self.lanes])
         }]
 
         lsb = 0
@@ -78,6 +78,8 @@ class Renderer(object):
             if 'type' not in e:
                 e['type'] = None
 
+        max_attr_count = 1 if any('attr' in x for x in desc) else 0
+        self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
         for i in range(0, self.lanes):
             self.index = i
             res.append(self.lane(desc))
@@ -86,7 +88,7 @@ class Renderer(object):
 
     def lane(self, desc):
         res = ['g', {
-            'transform': t(0, (self.lanes - self.index - 1) * self.vspace + 0.5)
+            'transform': t(0, (self.lanes - self.index - 1) * self.vspace)
         }]
         res.append(self.labels(desc))
         res.append(self.cage(desc))
@@ -98,22 +100,22 @@ class Renderer(object):
             'stroke': 'black',
             'stroke-width': stroke_width,
             'stroke-linecap': 'round',
-            'transform': t(0, self.vspace / 4)
+            'transform': t(0, self.fontsize * 1.2)
         }]
         res.append(self.hline(self.hspace, padding=stroke_width/2))
-        res.append(self.vline(self.vspace / 2))
-        res.append(self.hline(self.hspace, 0, self.vspace / 2, padding=stroke_width/2))
+        res.append(self.vline(self.vlane))
+        res.append(self.hline(self.hspace, 0, self.vlane, padding=stroke_width/2))
 
         i, j = self.index * self.mod, self.mod
         hbit = (self.hspace - stroke_width/2) / self.mod
         while True:
             if j == self.mod or any(e['lsb'] == i for e in desc):
-                res.append(self.vline((self.vspace / 2),
+                res.append(self.vline((self.vlane),
                                       j * hbit))
             else:
-                res.append(self.vline((self.vspace / 16),
+                res.append(self.vline((self.vlane / 8),
                                       j * hbit))
-                res.append(self.vline((self.vspace / 16),
+                res.append(self.vline((self.vlane / 8),
                                       j * hbit))
             i += 1
             j -= 1
@@ -127,10 +129,10 @@ class Renderer(object):
 
     def labelArr(self, desc):
         step = self.hspace / self.mod
-        bits = ['g', {'transform': t(step / 2, self.vspace / 5)}]
-        names = ['g', {'transform': t(step / 2, self.vspace / 2 + 4)}]
-        attrs = ['g', {'transform': t(step / 2, self.vspace)}]
-        blanks = ['g', {'transform': t(0, self.vspace / 4)}]
+        bits = ['g', {'transform': t(step / 2, self.fontsize)}]
+        names = ['g', {'transform': t(step / 2, self.vlane / 2 + self.fontsize * 1.7)}]
+        attrs = ['g', {'transform': t(step / 2, self.vlane + self.fontsize * 2.2)}]
+        blanks = ['g', {'transform': t(0, self.fontsize*1.2)}]
 
         for e in desc:
             lsbm = 0
@@ -180,7 +182,7 @@ class Renderer(object):
                     'x': step * (self.mod - msbm - 1),
                     'y': 0,
                     'width': step * (msbm - lsbm + 1),
-                    'height': self.vspace / 2
+                    'height': self.vlane
                 }])
             if 'attr' in e:
                 atext = ['text', {
