@@ -10,8 +10,8 @@ parser.add_argument(
 parser.add_argument(
     '--input', help='(compatibility option)', action='store_true')
 parser.add_argument('--vspace', help='vertical space', default=80, type=int)
-parser.add_argument('--hspace', help='horizontal space', default=640, type=int)
-parser.add_argument('--lanes', help='rectangle lanes', default=2, type=int)
+parser.add_argument('--hspace', help='horizontal space', default=800, type=int)
+parser.add_argument('--lanes', help='rectangle lanes', default=1, type=int)
 parser.add_argument('--bits', help='overall bitwidth', default=32, type=int)
 parser.add_argument('--bigendian', action='store_true')
 parser.add_argument('--fontfamily', default='sans-serif')
