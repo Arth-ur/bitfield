@@ -117,13 +117,13 @@ class Renderer(object):
         hbit = (self.hspace - stroke_width/2) / self.mod
         while True:
             if j == self.mod or any(e['lsb'] == i for e in desc):
-                res.append(self.vline((self.vlane),
+                res.append(self.vline(self.vlane,
                                       j * hbit))
             else:
                 res.append(self.vline((self.vlane / 8),
                                       j * hbit))
                 res.append(self.vline((self.vlane / 8),
-                                      j * hbit))
+                                      j * hbit, self.vlane * 7 / 8))
             i += 1
             j -= 1
             if j == 0:
