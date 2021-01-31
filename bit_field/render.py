@@ -186,14 +186,19 @@ class Renderer(object):
                     }, str(msb)])
             if 'name' in e:
                 ltextattrs = {
-                    'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
                     'font-size': self.fontsize,
                     'font-family': self.fontfamily,
                     'font-weight': self.fontweight,
+                    'text-anchor': 'middle',
+                    'y': 6
                 }
+                if 'rotate' in e:
+                    ltextattrs['transform'] = ' rotate({})'.format(e['rotate'])
                 if 'overline' in e and e['overline']:
                     ltextattrs['text-decoration'] = 'overline'
-                ltext = ['text', ltextattrs] + tspan(e['name'])
+                ltext = ['g', {
+                    'transform': t(step * (self.mod - ((msbm + lsbm) / 2) - 1), -6),
+                }, ['text', ltextattrs] + tspan(e['name'])]
                 names.append(ltext)
             if 'name' not in e or e['type'] is not None:
                 style = typeStyle(e['type'])
