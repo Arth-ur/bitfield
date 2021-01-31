@@ -6,6 +6,12 @@ A Python3 port of the javascript [bit-field library](https://github.com/drom/bit
 pip install bit_field
 ```
 
+For JSON5 usage, install json5:
+
+```sh
+pip install json5
+```
+
 ## Library usage
 
 ```python
@@ -31,6 +37,7 @@ python3 -m bit_field [options] input > alpha.svg
 ```
 input        : input JSON filename - must be specified always
 --input      : input JSON filename (kept for compatibility)
+--compact    : compact rendering mode
 --vspace     : vertical space - default 80
 --hspace     : horizontal space - default 640
 --lanes      : rectangle lanes - default 2
@@ -41,6 +48,9 @@ input        : input JSON filename - must be specified always
 --fontsize   : - default 14
 
 --beautify   : use xml beautifier
+
+--json5      : force json5 input format (need json5 python module)
+--no-json5   : never use json5 input format
 ```
 
 ### alpha.json
