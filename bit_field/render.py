@@ -210,15 +210,30 @@ class Renderer(object):
                 else:
                     e_attr = [e['attr']]
                 for i, attribute in enumerate(e_attr):
-                    atext = ['text', {
-                        'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
-                        'font-size': self.fontsize,
-                        'font-family': self.fontfamily,
-                        'font-weight': self.fontweight
-                    }] + tspan(attribute)
+                    if isinstance(attribute, int):
+                        atext = []
+                        import sys
+                        for biti in range(0, msb - lsb + 1):
+                            if (1 << (biti + lsb - e['lsb'])) & attribute == 0:
+                                bit_text = "0"
+                            else:
+                                bit_text = "1"
+                            atext+=[['text', {
+                                'x': step * (self.mod - lsbm - 1 - biti),
+                                'font-size': self.fontsize,
+                                'font-family': self.fontfamily,
+                                'font-weight': self.fontweight,
+                            }] + tspan(bit_text)]
+                    else:
+                        atext = [['text', {
+                            'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
+                            'font-size': self.fontsize,
+                            'font-family': self.fontfamily,
+                            'font-weight': self.fontweight
+                        }] + tspan(attribute)]
                     attrs.append(['g', {
                         'transform': t(0, i*self.fontsize)
-                    }, atext])
+                    }, *atext])
         if not self.compact or self.index == self.lanes - 1:
             if self.compact:
                 for i in range(self.bits // self.lanes):
