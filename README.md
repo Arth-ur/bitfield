@@ -29,7 +29,7 @@ html = jsonml_stringify(jsonml)
 ## CLI Usage
 
 ```sh
-python3 -m bit_field [options] input > alpha.svg
+bit_field [options] input > alpha.svg
 ```
 
 ### options
