@@ -6,10 +6,10 @@ A Python3 port of the javascript [bit-field library](https://github.com/drom/bit
 pip install bit_field
 ```
 
-For JSON5 usage, install json5:
+To install this package with JSON5 support:
 
 ```sh
-pip install json5
+pip install bit_field[JSON5]
 ```
 
 ## Library usage
