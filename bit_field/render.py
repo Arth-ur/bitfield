@@ -26,8 +26,8 @@ def typeStyle(t):
 class Renderer(object):
     def __init__(self,
                  vspace=80,
-                 hspace=800,
-                 lanes=1,
+                 hspace=640,
+                 lanes=2,
                  bits=32,
                  fontsize=14,
                  fontfamily='sans-serif',
