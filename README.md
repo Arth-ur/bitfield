@@ -42,7 +42,6 @@ input        : input JSON filename - must be specified always
 --hspace     : horizontal space - default 640
 --lanes      : rectangle lanes - default 2
 --bits       : overall bitwidth - default 32
---bigendian  : - default false
 --fontfamily : - default sans-serif
 --fontweight : - default normal
 --fontsize   : - default 14

@@ -30,7 +30,6 @@ class Renderer(object):
                  lanes=1,
                  bits=32,
                  fontsize=14,
-                 bigendian=False,
                  fontfamily='sans-serif',
                  fontweight='normal',
                  compact=False):
@@ -54,7 +53,6 @@ class Renderer(object):
         self.lanes = lanes
         self.bits = bits
         self.fontsize = fontsize
-        self.bigendian = bigendian
         self.fontfamily = fontfamily
         self.fontweight = fontweight
         self.compact = compact
