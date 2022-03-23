@@ -228,7 +228,6 @@ class Renderer(object):
                 for i, attribute in enumerate(e_attr):
                     if isinstance(attribute, int):
                         atext = []
-                        import sys
                         for biti in range(0, msb - lsb + 1):
                             if (1 << (biti + lsb - e['lsb'])) & attribute == 0:
                                 bit_text = "0"
