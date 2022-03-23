@@ -32,7 +32,8 @@ class Renderer(object):
                  fontsize=14,
                  fontfamily='sans-serif',
                  fontweight='normal',
-                 compact=False):
+                 compact=False,
+                 hflip=True):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -56,6 +57,7 @@ class Renderer(object):
         self.fontfamily = fontfamily
         self.fontweight = fontweight
         self.compact = compact
+        self.hflip = hflip
 
     def render(self, desc):
         res = ['svg', {
@@ -91,15 +93,19 @@ class Renderer(object):
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
         for i in range(0, self.lanes):
+            if self.hflip:
+                self.lane_index = self.lanes - i - 1
+            else:
+                self.lane_index = i
             self.index = i
             res.append(self.lane(desc))
 
         return res
 
     def lane(self, desc):
-        dy = (self.lanes - self.index - 1) * self.vspace
-        if self.compact and self.index != self.lanes - 1:
-            dy -= (self.lanes - self.index - 2) * (self.fontsize * 1.2)
+        dy = (self.lanes - self.lane_index - 1) * self.vspace
+        if self.compact and self.lane_index != self.lanes - 1:
+            dy -= (self.lanes - self.lane_index - 2) * (self.fontsize * 1.2)
         res = ['g', {
             'transform': t(0, dy)
         }]
@@ -109,7 +115,7 @@ class Renderer(object):
 
     def cage(self, desc):
         stroke_width = 1
-        if not self.compact or self.index == self.lanes - 1:
+        if not self.compact or self.lane_index == self.lanes - 1:
             dy = self.fontsize * 1.2
         else:
             dy = 0
@@ -237,7 +243,7 @@ class Renderer(object):
                     attrs.append(['g', {
                         'transform': t(0, i*self.fontsize)
                     }, *atext])
-        if not self.compact or self.index == self.lanes - 1:
+        if not self.compact or self.lane_index == self.lanes - 1:
             if self.compact:
                 for i in range(self.bits // self.lanes):
                     bits.append(['text', {

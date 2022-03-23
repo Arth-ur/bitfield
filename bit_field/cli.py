@@ -26,6 +26,7 @@ def bit_field_cli():
     parser.add_argument('--json5', action='store_true')
     parser.add_argument('--no-json5', action='store_true')
     parser.add_argument('--compact', action='store_true')
+    parser.add_argument('--hflip', help='horizontal flip', action='store_true')
     args = parser.parse_args()
 
     # default is json5, unless forced with --(no-)json5
@@ -49,7 +50,8 @@ def bit_field_cli():
                      fontfamily=args.fontfamily,
                      fontweight=args.fontweight,
                      fontsize=args.fontsize,
-                     compact=args.compact)
+                     compact=args.compact,
+                     hflip=args.hflip)
 
     res = jsonml_stringify(res)
     if args.beautify:
