@@ -46,6 +46,7 @@ input        : input JSON filename - must be specified always
 --fontweight : - default normal
 --fontsize   : - default 14
 --hflip      : horizontal flip
+--vflip      : horizontal flip
 
 --beautify   : use xml beautifier
 

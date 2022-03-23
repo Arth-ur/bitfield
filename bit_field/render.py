@@ -33,7 +33,8 @@ class Renderer(object):
                  fontfamily='sans-serif',
                  fontweight='normal',
                  compact=False,
-                 hflip=True):
+                 hflip=True,
+                 vflip=True):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -58,6 +59,7 @@ class Renderer(object):
         self.fontweight = fontweight
         self.compact = compact
         self.hflip = hflip
+        self.vflip = vflip
 
     def render(self, desc):
         res = ['svg', {
@@ -67,15 +69,20 @@ class Renderer(object):
             'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, self.vspace * self.lanes])
         }]
 
-        lsb = 0
         mod = self.bits // self.lanes
         self.mod = mod
-
+        lsb = 0
+        msb = self.bits - 1
         for e in desc:
-            e['lsb'] = lsb
-            e['lsbm'] = lsb % mod
-            lsb += e['bits']
-            e['msb'] = lsb - 1
+            if self.vflip:
+                e['msb'] = msb
+                msb -= e['bits']
+                e['lsb'] = msb + 1
+            else:
+                e['lsb'] = lsb
+                lsb += e['bits']
+                e['msb'] = lsb - 1
+            e['lsbm'] = e['lsb'] % mod
             e['msbm'] = e['msb'] % mod
             if 'type' not in e:
                 e['type'] = None
@@ -93,7 +100,7 @@ class Renderer(object):
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
         for i in range(0, self.lanes):
-            if self.hflip:
+            if self.hflip != self.vflip:
                 self.lane_index = self.lanes - i - 1
             else:
                 self.lane_index = i
@@ -180,14 +187,14 @@ class Renderer(object):
                     'font-size': self.fontsize,
                     'font-family': self.fontfamily,
                     'font-weight': self.fontweight
-                }, str(lsb)])
+                }, str(self.bits - lsb - 1) if self.vflip else str(lsb)])
                 if lsbm != msbm:
                     bits.append(['text', {
                         'x': step * (self.mod - msbm - 1),
                         'font-size': self.fontsize,
                         'font-family': self.fontfamily,
                         'font-weight': self.fontweight
-                    }, str(msb)])
+                    }, str(self.bits - msb - 1) if self.vflip else str(msb)])
             if 'name' in e:
                 ltextattrs = {
                     'font-size': self.fontsize,
@@ -251,7 +258,7 @@ class Renderer(object):
                         'font-size': self.fontsize,
                         'font-family': self.fontfamily,
                         'font-weight': self.fontweight
-                    }, str(i)])
+                    }, str(self.bits // self.lanes - i - 1) if self.vflip else str(i)])
             res = ['g', {}, bits, ['g', {
                 'transform': t(0, self.fontsize*1.2)
             }, blanks, names, attrs]]
