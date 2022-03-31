@@ -33,8 +33,8 @@ class Renderer(object):
                  fontfamily='sans-serif',
                  fontweight='normal',
                  compact=False,
-                 hflip=True,
-                 vflip=True):
+                 hflip=False,
+                 vflip=False):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
