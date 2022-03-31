@@ -1,5 +1,7 @@
 A Python3 port of the javascript [bit-field library](https://github.com/drom/bitfield/) by [Aliaksei Chapyzhenka](https://github.com/drom).
 
+This package is also available as an extension for Sphinx: [sphinxcontrib-bitfield](https://github.com/Arth-ur/sphinxcontrib-bitfield).
+
 ## Install
 
 ```sh
@@ -46,7 +48,7 @@ input        : input JSON filename - must be specified always
 --fontweight : - default normal
 --fontsize   : - default 14
 --hflip      : horizontal flip
---vflip      : horizontal flip
+--vflip      : vertical flip
 
 --beautify   : use xml beautifier
 
