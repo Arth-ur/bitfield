@@ -4,9 +4,9 @@ from .. import render
 from os import path
 
 
-class TestBasic(unittest.TestCase):
+class TestRender(unittest.TestCase):
 
-    def test_basic(self):
+    def test_render(self):
         with open(path.join(path.dirname(__file__), 'alpha.json'), 'r') as f:
             data = json.load(f)
             render(data)
