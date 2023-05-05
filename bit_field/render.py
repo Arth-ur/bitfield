@@ -95,7 +95,7 @@ class Renderer(object):
             height = self.vspace * self.lanes
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
-            height = self.vlane * (self.lanes - 1) + self.vspace
+            height = self.vlane * (self.lanes - 1) + self.vspace + self.stroke_width / 2
 
         res = ['svg', {
             'xmlns': 'http://www.w3.org/2000/svg',
@@ -136,9 +136,9 @@ class Renderer(object):
             'stroke-linecap': 'butt',
             'transform': t(0, dy)
         }]
-        res.append(self.hline(self.hspace, padding=self.stroke_width/2))
-        res.append(self.vline(self.vlane))
-        res.append(self.hline(self.hspace, 0, self.vlane, padding=self.stroke_width/2))
+        res.append(self.hline(self.hspace))
+        res.append(self.vline(self.vlane, self.stroke_width / 2))
+        res.append(self.hline(self.hspace, 0, self.vlane))
 
         i, j = self.index * self.mod, self.mod
         hbit = (self.hspace - self.stroke_width/2) / self.mod
