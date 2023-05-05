@@ -22,6 +22,7 @@ def bit_field_cli():
     parser.add_argument('--fontfamily', default='sans-serif')
     parser.add_argument('--fontweight', default='normal')
     parser.add_argument('--fontsize', default=14, type=int)
+    parser.add_argument('--strokewidth', help='stroke width', default=1, type=float)
     parser.add_argument('--beautify', action='store_true')
     parser.add_argument('--json5', action='store_true')
     parser.add_argument('--no-json5', action='store_true')
@@ -53,7 +54,8 @@ def bit_field_cli():
                      fontsize=args.fontsize,
                      compact=args.compact,
                      hflip=args.hflip,
-                     vflip=args.vflip)
+                     vflip=args.vflip,
+                     stroke_width=args.stroke_width)
 
     res = jsonml_stringify(res)
     if args.beautify:

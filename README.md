@@ -47,6 +47,7 @@ input        : input JSON filename - must be specified always
 --fontfamily : - default sans-serif
 --fontweight : - default normal
 --fontsize   : - default 14
+--strokewidth: - default 1
 --hflip      : horizontal flip
 --vflip      : vertical flip
 

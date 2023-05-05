@@ -34,7 +34,8 @@ class Renderer(object):
                  fontweight='normal',
                  compact=False,
                  hflip=False,
-                 vflip=False):
+                 vflip=False,
+                 strokewidth=1):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -60,6 +61,7 @@ class Renderer(object):
         self.compact = compact
         self.hflip = hflip
         self.vflip = vflip
+        self.stroke_width = strokewidth
 
     def render(self, desc):
         res = ['svg', {
@@ -121,23 +123,22 @@ class Renderer(object):
         return res
 
     def cage(self, desc):
-        stroke_width = 1
         if not self.compact or self.lane_index == self.lanes - 1:
             dy = self.fontsize * 1.2
         else:
             dy = 0
         res = ['g', {
             'stroke': 'black',
-            'stroke-width': stroke_width,
+            'stroke-width': self.stroke_width,
             'stroke-linecap': 'round',
             'transform': t(0, dy)
         }]
-        res.append(self.hline(self.hspace, padding=stroke_width/2))
+        res.append(self.hline(self.hspace, padding=self.stroke_width/2))
         res.append(self.vline(self.vlane))
-        res.append(self.hline(self.hspace, 0, self.vlane, padding=stroke_width/2))
+        res.append(self.hline(self.hspace, 0, self.vlane, padding=self.stroke_width/2))
 
         i, j = self.index * self.mod, self.mod
-        hbit = (self.hspace - stroke_width/2) / self.mod
+        hbit = (self.hspace - self.stroke_width/2) / self.mod
         while True:
             if j == self.mod or any(e['lsb'] == i for e in desc):
                 res.append(self.vline(self.vlane,
