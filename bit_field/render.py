@@ -64,13 +64,6 @@ class Renderer(object):
         self.stroke_width = strokewidth
 
     def render(self, desc):
-        res = ['svg', {
-            'xmlns': 'http://www.w3.org/2000/svg',
-            'width': self.hspace,
-            'height': self.vspace * self.lanes,
-            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, self.vspace * self.lanes])
-        }]
-
         mod = self.bits // self.lanes
         self.mod = mod
         lsb = 0
@@ -99,8 +92,18 @@ class Renderer(object):
 
         if not self.compact:
             self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
+            height = self.vspace * self.lanes
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
+            height = self.vlane * (self.lanes - 1) + self.vspace
+
+        res = ['svg', {
+            'xmlns': 'http://www.w3.org/2000/svg',
+            'width': self.hspace,
+            'height': height,
+            'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, height])
+        }]
+
         for i in range(0, self.lanes):
             if self.hflip != self.vflip:
                 self.lane_index = self.lanes - i - 1
