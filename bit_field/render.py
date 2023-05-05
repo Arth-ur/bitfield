@@ -130,7 +130,7 @@ class Renderer(object):
         res = ['g', {
             'stroke': 'black',
             'stroke-width': self.stroke_width,
-            'stroke-linecap': 'round',
+            'stroke-linecap': 'butt',
             'transform': t(0, dy)
         }]
         res.append(self.hline(self.hspace, padding=self.stroke_width/2))
