@@ -1,16 +1,67 @@
-import unittest
+import pytest
 import json
 from .. import render
-from os import path
+from ..jsonml_stringify import jsonml_stringify
+from pathlib import Path
+from subprocess import run
+from .render_report import render_report
 
 
-class TestRender(unittest.TestCase):
+@pytest.mark.parametrize('lanes', [1, 2, 4])
+@pytest.mark.parametrize('compact', [True, False])
+@pytest.mark.parametrize('hflip', [True, False])
+@pytest.mark.parametrize('vflip', [True, False])
+@pytest.mark.parametrize('strokewidth', [1, 4])
+def test_render(request,
+                output_dir,
+                input_data,
+                lanes,
+                compact,
+                hflip,
+                vflip,
+                strokewidth):
+    res = render(input_data,
+                 lanes=lanes,
+                 compact=compact,
+                 hflip=hflip,
+                 vflip=vflip,
+                 strokewidth=strokewidth)
+    res[1]['data-lanes'] = lanes
+    res[1]['data-compact'] = compact
+    res[1]['data-hflip'] = hflip
+    res[1]['data-vflip'] = vflip
+    res[1]['data-strokewidth'] = strokewidth
+    res = jsonml_stringify(res)
 
-    def test_render(self):
-        with open(path.join(path.dirname(__file__), 'alpha.json'), 'r') as f:
-            data = json.load(f)
-            render(data)
+    output_filename = request.node.name
+    output_filename += '.svg'
+
+    (output_dir / output_filename).write_text(res)
 
 
-if __name__ == '__main__':
-    unittest.main()
+@pytest.fixture
+def input_data():
+    return json.loads("""
+[
+  { "name": "IPO",   "bits": 8, "attr": "RO" },
+  {                  "bits": 7 },
+  { "name": "BRK",   "bits": 5, "attr": [ 9, "RO"], "type": 4 },
+  { "name": "CPK",   "bits": 1 },
+  { "name": "Clear", "bits": 3 },
+  { "bits": 8 }
+]
+    """)
+
+
+@pytest.fixture
+def output_dir():
+    git_describe = run(['git', 'describe', '--tags', '--match', 'v*'],
+                       capture_output=True, check=True, text=True).stdout.strip()
+    output_dir = Path(__file__).parent / f'output-{git_describe}'
+    output_dir.mkdir(exist_ok=True)
+    return output_dir
+
+@pytest.fixture(scope='module', autouse=True)
+def fixture_render_report():
+    yield
+    render_report()
