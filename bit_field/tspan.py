@@ -19,11 +19,12 @@ trans = {
 }
 pattern = '|'.join(re.escape(k) for k in trans.keys())
 
+
 def dump(state):
     att = {}
     for k, v in state.items():
         for kk, vv in v.items():
-            if vv == True:
+            if vv:
                 att[k] = kk
     return att
 
@@ -59,6 +60,7 @@ def tspan(str):
         if len(str) == 0:
             break
     return res
+
 
 if __name__ == '__main__':
     import sys

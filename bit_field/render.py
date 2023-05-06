@@ -161,7 +161,7 @@ class Renderer(object):
     def labels(self, desc):
         return ['g', {'text-anchor': 'middle'}, self.labelArr(desc)]
 
-    def labelArr(self, desc):
+    def labelArr(self, desc):  # noqa: C901
         step = self.hspace / self.mod
         bits = ['g', {'transform': t(step / 2, self.fontsize)}]
         names = ['g', {'transform': t(step / 2, self.vlane / 2 + self.fontsize / 2)}]
@@ -237,7 +237,7 @@ class Renderer(object):
                                 bit_text = "0"
                             else:
                                 bit_text = "1"
-                            atext+=[['text', {
+                            atext += [['text', {
                                 'x': step * (self.mod - lsbm - 1 - biti),
                                 'font-size': self.fontsize,
                                 'font-family': self.fontfamily,

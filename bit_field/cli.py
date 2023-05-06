@@ -2,11 +2,13 @@ from .render import render
 from .jsonml_stringify import jsonml_stringify
 import argparse
 
+
 def beautify(res):
     import xml.dom.minidom
     xml = xml.dom.minidom.parseString(res)
     res = xml.toprettyxml()
     return res
+
 
 def bit_field_cli():
     parser = argparse.ArgumentParser('bitfield')
