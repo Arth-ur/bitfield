@@ -12,6 +12,7 @@ from .render_report import render_report
 @pytest.mark.parametrize('hflip', [True, False])
 @pytest.mark.parametrize('vflip', [True, False])
 @pytest.mark.parametrize('strokewidth', [1, 4])
+@pytest.mark.parametrize('trim', [None, 8])
 def test_render(request,
                 output_dir,
                 input_data,
@@ -19,18 +20,21 @@ def test_render(request,
                 compact,
                 hflip,
                 vflip,
-                strokewidth):
+                strokewidth,
+                trim):
     res = render(input_data,
                  lanes=lanes,
                  compact=compact,
                  hflip=hflip,
                  vflip=vflip,
-                 strokewidth=strokewidth)
+                 strokewidth=strokewidth,
+                 trim=trim)
     res[1]['data-lanes'] = lanes
     res[1]['data-compact'] = compact
     res[1]['data-hflip'] = hflip
     res[1]['data-vflip'] = vflip
     res[1]['data-strokewidth'] = strokewidth
+    res[1]['data-trim'] = trim
     res = jsonml_stringify(res)
 
     output_filename = request.node.name

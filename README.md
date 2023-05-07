@@ -50,6 +50,7 @@ input        : input JSON filename - must be specified always
 --strokewidth: - default 1
 --hflip      : horizontal flip
 --vflip      : vertical flip
+--trim       : horizontal space available for a single character
 
 --beautify   : use xml beautifier
 

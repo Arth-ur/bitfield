@@ -35,7 +35,8 @@ class Renderer(object):
                  compact=False,
                  hflip=False,
                  vflip=False,
-                 strokewidth=1):
+                 strokewidth=1,
+                 trim=None):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -62,6 +63,7 @@ class Renderer(object):
         self.hflip = hflip
         self.vflip = vflip
         self.stroke_width = strokewidth
+        self.trim_char_width = trim
 
     def render(self, desc):
         mod = self.bits // self.lanes
@@ -211,9 +213,10 @@ class Renderer(object):
                     ltextattrs['transform'] = ' rotate({})'.format(e['rotate'])
                 if 'overline' in e and e['overline']:
                     ltextattrs['text-decoration'] = 'overline'
+                available_space = step * (msb - lsb + 1)
                 ltext = ['g', {
                     'transform': t(step * (self.mod - ((msbm + lsbm) / 2) - 1), -6),
-                }, ['text', ltextattrs] + tspan(e['name'])]
+                }, ['text', ltextattrs] + tspan(self.trim_text(e['name'], available_space))]
                 names.append(ltext)
             if 'name' not in e or e['type'] is not None:
                 style = typeStyle(e['type'])
@@ -298,6 +301,17 @@ class Renderer(object):
             att['y2'] = len
         res.append(att)
         return res
+
+    def trim_text(self, text, available_space):
+        if self.trim_char_width is None:
+            return text
+        text_width = len(text) * self.trim_char_width
+        if text_width <= available_space:
+            return text
+        end = len(text) - int((text_width - available_space) / self.trim_char_width) - 3
+        if end > 0:
+            return text[:end] + '...'
+        return text[:1] + '...'
 
 
 def render(desc, **kwargs):

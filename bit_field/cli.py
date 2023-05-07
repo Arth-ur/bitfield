@@ -31,6 +31,7 @@ def bit_field_cli():
     parser.add_argument('--compact', action='store_true')
     parser.add_argument('--hflip', help='horizontal flip', action='store_true')
     parser.add_argument('--vflip', help='vertical flip', action='store_true')
+    parser.add_argument('--trim', help='trim long bitfield names', type=float)
     args = parser.parse_args()
 
     # default is json5, unless forced with --(no-)json5
@@ -57,7 +58,8 @@ def bit_field_cli():
                      compact=args.compact,
                      hflip=args.hflip,
                      vflip=args.vflip,
-                     stroke_width=args.stroke_width)
+                     stroke_width=args.stroke_width,
+                     trim=args.trim)
 
     res = jsonml_stringify(res)
     if args.beautify:
