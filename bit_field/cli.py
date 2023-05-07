@@ -20,7 +20,7 @@ def bit_field_cli():
     parser.add_argument('--vspace', help='vertical space', default=80, type=int)
     parser.add_argument('--hspace', help='horizontal space', default=800, type=int)
     parser.add_argument('--lanes', help='rectangle lanes', default=1, type=int)
-    parser.add_argument('--bits', help='overall bitwidth', default=32, type=int)
+    parser.add_argument('--bits', help='overall bitwidth', default=None, type=int)
     parser.add_argument('--fontfamily', default='sans-serif')
     parser.add_argument('--fontweight', default='normal')
     parser.add_argument('--fontsize', default=14, type=int)

@@ -28,7 +28,7 @@ class Renderer(object):
                  vspace=80,
                  hspace=640,
                  lanes=2,
-                 bits=32,
+                 bits=None,
                  fontsize=14,
                  fontfamily='sans-serif',
                  fontweight='normal',
@@ -46,7 +46,7 @@ class Renderer(object):
         if lanes <= 0:
             raise ValueError(
                 'lanes must be greater than 0, got {}.'.format(lanes))
-        if bits <= 4:
+        if bits is not None and bits <= 4:
             raise ValueError(
                 'bits must be greater than 4, got {}.'.format(bits))
         if fontsize <= 5:
@@ -65,7 +65,11 @@ class Renderer(object):
         self.stroke_width = strokewidth
         self.trim_char_width = trim
 
+    def get_total_bits(self, desc):
+        return sum(e['bits'] for e in desc)
+
     def render(self, desc):
+        self.bits = self.bits if self.bits is not None else self.get_total_bits(desc)
         mod = self.bits // self.lanes
         self.mod = mod
         lsb = 0

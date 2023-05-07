@@ -7,6 +7,7 @@ from subprocess import run
 from .render_report import render_report
 
 
+@pytest.mark.parametrize('bits', [None, 32])
 @pytest.mark.parametrize('lanes', [1, 2, 4])
 @pytest.mark.parametrize('compact', [True, False])
 @pytest.mark.parametrize('hflip', [True, False])
@@ -16,6 +17,7 @@ from .render_report import render_report
 def test_render(request,
                 output_dir,
                 input_data,
+                bits,
                 lanes,
                 compact,
                 hflip,
@@ -23,12 +25,14 @@ def test_render(request,
                 strokewidth,
                 trim):
     res = render(input_data,
+                 bits=bits,
                  lanes=lanes,
                  compact=compact,
                  hflip=hflip,
                  vflip=vflip,
                  strokewidth=strokewidth,
                  trim=trim)
+    res[1]['data-bits'] = bits
     res[1]['data-lanes'] = lanes
     res[1]['data-compact'] = compact
     res[1]['data-hflip'] = hflip
