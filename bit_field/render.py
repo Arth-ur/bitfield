@@ -7,6 +7,10 @@ def t(x, y):
 
 
 def typeStyle(t):
+    return ';fill:' + typeColor(t)
+
+
+def typeColor(t):
     styles = {
         '2': 0,
         '3': 80,
@@ -18,9 +22,9 @@ def typeStyle(t):
     t = str(t)
     if t in styles:
         r, g, b = colorsys.hls_to_rgb(styles[t] / 360, 0.9, 1)
-        return ';fill:rgb({:.0f}, {:.0f}, {:.0f})'.format(r * 255, g * 255, b * 255)
+        return 'rgb({:.0f}, {:.0f}, {:.0f})'.format(r * 255, g * 255, b * 255)
     else:
-        return ';fill:rgb({:.0f}, {:.0f}, {:.0f})'.format(229, 229, 229)
+        return 'rgb({:.0f}, {:.0f}, {:.0f})'.format(229, 229, 229)
 
 
 class Renderer(object):
@@ -134,6 +138,7 @@ class Renderer(object):
                 'x': x,
                 'width': 12,
                 'height': 12,
+                'fill': typeColor(value),
                 'style': 'stroke:#000; stroke-width:' + str(self.stroke_width) + ';' + typeStyle(value)
             }])
             x += square_padding
@@ -279,7 +284,8 @@ class Renderer(object):
                     'x': step * (lsb_pos if self.vflip else msb_pos),
                     'y': self.stroke_width / 2,
                     'width': step * (msbm - lsbm + 1),
-                    'height': self.vlane - self.stroke_width / 2
+                    'height': self.vlane - self.stroke_width / 2,
+                    'fill': typeColor(e['type']),
                 }])
             if 'attr' in e and not self.compact:
                 if isinstance(e['attr'], list):
