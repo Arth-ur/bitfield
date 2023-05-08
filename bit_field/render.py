@@ -37,7 +37,8 @@ class Renderer(object):
                  vflip=False,
                  strokewidth=1,
                  trim=None,
-                 uneven=False):
+                 uneven=False,
+                 legend=None):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -66,6 +67,7 @@ class Renderer(object):
         self.stroke_width = strokewidth
         self.trim_char_width = trim
         self.uneven = uneven
+        self.legend = legend
 
     def get_total_bits(self, desc):
         return sum(e['bits'] for e in desc)
@@ -100,6 +102,8 @@ class Renderer(object):
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
             height = self.vlane * (self.lanes - 1) + self.vspace + self.stroke_width / 2
+        if self.legend:
+            height += self.fontsize * 1.2
 
         res = ['svg', {
             'xmlns': 'http://www.w3.org/2000/svg',
@@ -107,6 +111,9 @@ class Renderer(object):
             'height': height,
             'viewbox': ' '.join(str(x) for x in [0, 0, self.hspace, height])
         }]
+
+        if self.legend:
+            res.append(self.legend_items())
 
         for i in range(0, self.lanes):
             if self.hflip:
@@ -117,6 +124,29 @@ class Renderer(object):
             res.append(self.lane(desc))
         return res
 
+    def legend_items(self):
+        items = ['g', {'transform': t(0, self.stroke_width / 2)}]
+        name_padding = 64
+        square_padding = 20
+        x = self.hspace / 2 - len(self.legend) / 2 * (square_padding + name_padding)
+        for key, value in self.legend.items():
+            items.append(['rect', {
+                'x': x,
+                'width': 12,
+                'height': 12,
+                'style': 'stroke:#000; stroke-width:' + str(self.stroke_width) + ';' + typeStyle(value)
+            }])
+            x += square_padding
+            items.append(['text', {
+                'x': x,
+                'font-size': self.fontsize,
+                'font-family': self.fontfamily,
+                'font-weight': self.fontweight,
+                'y': self.fontsize / 1.2,
+            }, key])
+            x += name_padding
+        return items
+
     def lane(self, desc):
         if self.compact:
             if self.index > 0:
@@ -125,6 +155,8 @@ class Renderer(object):
                 dy = 0
         else:
             dy = self.index * self.vspace
+        if self.legend:
+            dy += self.fontsize * 1.2
         res = ['g', {
             'transform': t(0, dy)
         }]
