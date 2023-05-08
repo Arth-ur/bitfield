@@ -24,8 +24,8 @@ def render_report():
                 if file in tree[other_dir]:
                     tree[other_dir].remove(file)
             compare_tree[file] = sorted(compare_list)
-            tree[dir].remove(file)
-    
+        tree[dir] = []
+
     output_lines = ['<!DOCTYPE html>']
     output_lines += ['<head><title>Bitfield Render Compare</title></head>']
     output_lines += ['<body>']

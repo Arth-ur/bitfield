@@ -36,7 +36,8 @@ class Renderer(object):
                  hflip=False,
                  vflip=False,
                  strokewidth=1,
-                 trim=None):
+                 trim=None,
+                 uneven=False):
         if vspace <= 19:
             raise ValueError(
                 'vspace must be greater than 19, got {}.'.format(vspace))
@@ -64,25 +65,22 @@ class Renderer(object):
         self.vflip = vflip
         self.stroke_width = strokewidth
         self.trim_char_width = trim
+        self.uneven = uneven
 
     def get_total_bits(self, desc):
         return sum(e['bits'] for e in desc)
 
     def render(self, desc):
         self.bits = self.bits if self.bits is not None else self.get_total_bits(desc)
-        mod = self.bits // self.lanes
+
+        mod = (self.bits + self.lanes - 1) // self.lanes
         self.mod = mod
         lsb = 0
         msb = self.bits - 1
         for e in desc:
-            if self.vflip:
-                e['msb'] = msb
-                msb -= e['bits']
-                e['lsb'] = msb + 1
-            else:
-                e['lsb'] = lsb
-                lsb += e['bits']
-                e['msb'] = lsb - 1
+            e['lsb'] = lsb
+            lsb += e['bits']
+            e['msb'] = lsb - 1
             e['lsbm'] = e['lsb'] % mod
             e['msbm'] = e['msb'] % mod
             if 'type' not in e:
@@ -98,7 +96,7 @@ class Renderer(object):
 
         if not self.compact:
             self.vlane = self.vspace - self.fontsize * (1.2 + max_attr_count)
-            height = self.vspace * self.lanes
+            height = self.vspace * self.lanes  + self.stroke_width / 2
         else:
             self.vlane = self.vspace - self.fontsize * 1.2
             height = self.vlane * (self.lanes - 1) + self.vspace + self.stroke_width / 2
@@ -111,19 +109,22 @@ class Renderer(object):
         }]
 
         for i in range(0, self.lanes):
-            if self.hflip != self.vflip:
-                self.lane_index = self.lanes - i - 1
-            else:
+            if self.hflip:
                 self.lane_index = i
+            else:
+                self.lane_index = self.lanes - i - 1
             self.index = i
             res.append(self.lane(desc))
-
         return res
 
     def lane(self, desc):
-        dy = (self.lanes - self.lane_index - 1) * self.vspace
-        if self.compact and self.lane_index != self.lanes - 1:
-            dy -= (self.lanes - self.lane_index - 2) * (self.fontsize * 1.2)
+        if self.compact:
+            if self.index > 0:
+                dy = (self.index - 1) * self.vlane + self.vspace
+            else:
+                dy = 0
+        else:
+            dy = self.index * self.vspace
         res = ['g', {
             'transform': t(0, dy)
         }]
@@ -132,7 +133,7 @@ class Renderer(object):
         return res
 
     def cage(self, desc):
-        if not self.compact or self.lane_index == self.lanes - 1:
+        if not self.compact or self.index == 0:
             dy = self.fontsize * 1.2
         else:
             dy = 0
@@ -142,25 +143,40 @@ class Renderer(object):
             'stroke-linecap': 'butt',
             'transform': t(0, dy)
         }]
-        res.append(self.hline(self.hspace))
-        res.append(self.vline(self.vlane, self.stroke_width / 2))
-        res.append(self.hline(self.hspace, 0, self.vlane))
 
-        i, j = self.index * self.mod, self.mod
-        hbit = (self.hspace - self.stroke_width/2) / self.mod
-        while True:
-            if j == self.mod or any(e['lsb'] == i for e in desc):
-                res.append(self.vline(self.vlane,
-                                      j * hbit))
+        skip_count = 0
+        if self.uneven and self.lanes > 1 and self.lane_index == self.lanes - 1:
+            skip_count = self.mod - self.bits % self.mod
+            if skip_count == self.mod:
+                skip_count = 0
+
+        hlen = (self.hspace / self.mod) * (self.mod - skip_count)
+        hpos = 0 if self.vflip else (self.hspace / self.mod) * (skip_count)
+
+        if not self.compact or self.hflip or self.lane_index == 0:
+            res.append(self.hline(hlen, hpos, self.vlane))  # bottom
+        if not self.compact or not self.hflip or self.lane_index == 0:
+            res.append(self.hline(hlen, hpos))  # top
+
+        hbit = (self.hspace - self.stroke_width) / self.mod
+        for bit_pos in range(self.mod):
+            bitm = (bit_pos if self.vflip else self.mod - bit_pos - 1)
+            bit = self.lane_index * self.mod + bitm
+            if bit >= self.bits:
+                continue
+            rpos = bit_pos + 1 if self.vflip else bit_pos
+            lpos = bit_pos if self.vflip else bit_pos + 1
+            if bitm + 1 == self.mod - skip_count:
+                res.append(self.vline(self.vlane, rpos * hbit + self.stroke_width / 2))
+            if bitm == 0:
+                res.append(self.vline(self.vlane, lpos * hbit + self.stroke_width / 2))
+            elif any(e['lsb'] == bit for e in desc):
+                res.append(self.vline(self.vlane, lpos * hbit + self.stroke_width / 2))
             else:
                 res.append(self.vline((self.vlane / 8),
-                                      j * hbit))
+                                      lpos * hbit + self.stroke_width / 2))
                 res.append(self.vline((self.vlane / 8),
-                                      j * hbit, self.vlane * 7 / 8))
-            i += 1
-            j -= 1
-            if j == 0:
-                break
+                                      lpos * hbit + self.stroke_width / 2, self.vlane * 7 / 8))
 
         return res
 
@@ -177,34 +193,36 @@ class Renderer(object):
         for e in desc:
             lsbm = 0
             msbm = self.mod - 1
-            lsb = self.index * self.mod
-            msb = (self.index + 1) * self.mod - 1
-            if e['lsb'] // self.mod == self.index:
+            lsb = self.lane_index * self.mod
+            msb = (self.lane_index + 1) * self.mod - 1
+            if e['lsb'] // self.mod == self.lane_index:
                 lsbm = e['lsbm']
                 lsb = e['lsb']
-                if e['msb'] // self.mod == self.index:
+                if e['msb'] // self.mod == self.lane_index:
                     msb = e['msb']
                     msbm = e['msbm']
             else:
-                if e['msb'] // self.mod == self.index:
+                if e['msb'] // self.mod == self.lane_index:
                     msb = e['msb']
                     msbm = e['msbm']
                 elif not (lsb > e['lsb'] and msb < e['msb']):
                     continue
+            msb_pos = msbm if self.vflip else (self.mod - msbm - 1)
+            lsb_pos = lsbm if self.vflip else (self.mod - lsbm - 1)
             if not self.compact:
                 bits.append(['text', {
-                    'x': step * (self.mod - lsbm - 1),
+                    'x': step * lsb_pos,
                     'font-size': self.fontsize,
                     'font-family': self.fontfamily,
                     'font-weight': self.fontweight
-                }, str(self.bits - lsb - 1) if self.vflip else str(lsb)])
+                }, str(lsb)])
                 if lsbm != msbm:
                     bits.append(['text', {
-                        'x': step * (self.mod - msbm - 1),
+                        'x': step * msb_pos,
                         'font-size': self.fontsize,
                         'font-family': self.fontfamily,
                         'font-weight': self.fontweight
-                    }, str(self.bits - msb - 1) if self.vflip else str(msb)])
+                    }, str(msb)])
             if 'name' in e:
                 ltextattrs = {
                     'font-size': self.fontsize,
@@ -217,19 +235,19 @@ class Renderer(object):
                     ltextattrs['transform'] = ' rotate({})'.format(e['rotate'])
                 if 'overline' in e and e['overline']:
                     ltextattrs['text-decoration'] = 'overline'
-                available_space = step * (msb - lsb + 1)
+                available_space = step * (msbm - lsbm + 1)
                 ltext = ['g', {
-                    'transform': t(step * (self.mod - ((msbm + lsbm) / 2) - 1), -6),
+                    'transform': t(step * (msb_pos + lsb_pos) / 2, -6),
                 }, ['text', ltextattrs] + tspan(self.trim_text(e['name'], available_space))]
                 names.append(ltext)
             if 'name' not in e or e['type'] is not None:
                 style = typeStyle(e['type'])
                 blanks.append(['rect', {
                     'style': style,
-                    'x': step * (self.mod - msbm - 1),
-                    'y': 0,
+                    'x': step * (lsb_pos if self.vflip else msb_pos),
+                    'y': self.stroke_width / 2,
                     'width': step * (msbm - lsbm + 1),
-                    'height': self.vlane
+                    'height': self.vlane - self.stroke_width / 2
                 }])
             if 'attr' in e and not self.compact:
                 if isinstance(e['attr'], list):
@@ -244,15 +262,16 @@ class Renderer(object):
                                 bit_text = "0"
                             else:
                                 bit_text = "1"
+                            bit_pos = lsb_pos + biti if self.vflip else (lsb_pos - biti)
                             atext += [['text', {
-                                'x': step * (self.mod - lsbm - 1 - biti),
+                                'x': step * bit_pos,
                                 'font-size': self.fontsize,
                                 'font-family': self.fontfamily,
                                 'font-weight': self.fontweight,
                             }] + tspan(bit_text)]
                     else:
                         atext = [['text', {
-                            'x': step * (self.mod - ((msbm + lsbm) / 2) - 1),
+                            'x': step * (msb_pos + lsb_pos) / 2,
                             'font-size': self.fontsize,
                             'font-family': self.fontfamily,
                             'font-weight': self.fontweight
@@ -260,15 +279,15 @@ class Renderer(object):
                     attrs.append(['g', {
                         'transform': t(0, i*self.fontsize)
                     }, *atext])
-        if not self.compact or self.lane_index == self.lanes - 1:
+        if not self.compact or (self.index == 0):
             if self.compact:
-                for i in range(self.bits // self.lanes):
+                for i in range(self.mod):
                     bits.append(['text', {
-                        'x': step * (self.mod - i - 1),
+                        'x': step * i,
                         'font-size': self.fontsize,
                         'font-family': self.fontfamily,
-                        'font-weight': self.fontweight
-                    }, str(self.bits // self.lanes - i - 1) if self.vflip else str(i)])
+                        'font-weight': self.fontweight,
+                    }, str(i if self.vflip else self.mod - i - 1)])
             res = ['g', {}, bits, ['g', {
                 'transform': t(0, self.fontsize*1.2)
             }, blanks, names, attrs]]
@@ -285,14 +304,14 @@ class Renderer(object):
         if x != 0:
             att['x1'] = x
         if len != 0:
-            att['x2'] = len
+            att['x2'] = x + len
         if y != 0:
             att['y1'] = y
             att['y2'] = y
         res.append(att)
         return res
 
-    def vline(self, len, x=None, y=None):
+    def vline(self, len, x=None, y=None, stroke=None):
         res = ['line']
         att = {}
         if x is not None:
@@ -303,6 +322,8 @@ class Renderer(object):
             att['y2'] = y + len
         else:
             att['y2'] = len
+        if stroke:
+            att['stroke'] = stroke
         res.append(att)
         return res
 

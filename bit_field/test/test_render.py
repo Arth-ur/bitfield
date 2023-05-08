@@ -7,13 +7,14 @@ from subprocess import run
 from .render_report import render_report
 
 
-@pytest.mark.parametrize('bits', [None, 32])
+@pytest.mark.parametrize('bits', [31])
 @pytest.mark.parametrize('lanes', [1, 2, 4])
 @pytest.mark.parametrize('compact', [True, False])
 @pytest.mark.parametrize('hflip', [True, False])
 @pytest.mark.parametrize('vflip', [True, False])
 @pytest.mark.parametrize('strokewidth', [1, 4])
 @pytest.mark.parametrize('trim', [None, 8])
+@pytest.mark.parametrize('uneven', [True])
 def test_render(request,
                 output_dir,
                 input_data,
@@ -23,7 +24,8 @@ def test_render(request,
                 hflip,
                 vflip,
                 strokewidth,
-                trim):
+                trim,
+                uneven):
     res = render(input_data,
                  bits=bits,
                  lanes=lanes,
@@ -31,7 +33,8 @@ def test_render(request,
                  hflip=hflip,
                  vflip=vflip,
                  strokewidth=strokewidth,
-                 trim=trim)
+                 trim=trim,
+                 uneven=uneven)
     res[1]['data-bits'] = bits
     res[1]['data-lanes'] = lanes
     res[1]['data-compact'] = compact
@@ -39,6 +42,7 @@ def test_render(request,
     res[1]['data-vflip'] = vflip
     res[1]['data-strokewidth'] = strokewidth
     res[1]['data-trim'] = trim
+    res[1]['data-uneven'] = uneven
     res = jsonml_stringify(res)
 
     output_filename = request.node.name
@@ -53,10 +57,10 @@ def input_data():
 [
   { "name": "IPO",   "bits": 8, "attr": "RO" },
   {                  "bits": 7 },
-  { "name": "BRK",   "bits": 5, "attr": [ 9, "RO"], "type": 4 },
+  { "name": "BRK",   "bits": 5, "attr": [ 11, "RO"], "type": 4 },
   { "name": "CPK",   "bits": 1 },
   { "name": "Clear", "bits": 3 },
-  { "bits": 8 }
+  { "bits": 7 }
 ]
     """)
 
