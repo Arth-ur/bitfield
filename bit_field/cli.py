@@ -60,7 +60,7 @@ def bit_field_cli():
                      compact=args.compact,
                      hflip=args.hflip,
                      vflip=args.vflip,
-                     stroke_width=args.stroke_width,
+                     strokewidth=args.strokewidth,
                      trim=args.trim,
                      uneven=args.uneven,
                      legend={key: value for key, value in args.legend} if args.legend else None)
